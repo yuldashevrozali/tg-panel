@@ -47,6 +47,41 @@ async function getServices() {
   }
 }
 
+// Majburiy kanallar
+const REQUIRED_CHANNELS = ["@yuldashev_smm_news", "@frontend_uzbekcha"];
+
+// A'zolikni tekshirish
+async function checkMembership(ctx, channels) {
+  for (const channel of channels) {
+    try {
+      const member = await ctx.telegram.getChatMember(channel, ctx.from.id);
+      if (member.status === 'left' || member.status === 'kicked') {
+        return false;
+      }
+    } catch (err) {
+      console.error("A'zolik tekshirishda xatolik:", err);
+      return false;
+    }
+  }
+  return true;
+}
+
+// Kanalga azo bo'lishni so'rash
+function showJoinChannels(ctx) {
+  const keyboard = {
+    inline_keyboard: [
+      [{ text: "📢 SMM News kanaliga azo bo'lish", url: "https://t.me/yuldashev_smm_news" }],
+      [{ text: "💻 Frontend kanaliga azo bo'lish", url: "https://t.me/frontend_uzbekcha" }],
+      [{ text: "✅ Men azo bo'ldim", callback_data: "check_membership" }]
+    ]
+  };
+
+  ctx.reply(
+    "Iltimos quyidagi kanallarimizga azo bo'lsangizgina botni ishlatishingiz mumkin:\n\n📢 @yuldashev_smm_news\n💻 @frontend_uzbekcha\n\nAzo bo'lgach, '✅ Men azo bo'ldim' tugmasini bosing.",
+    { reply_markup: keyboard }
+  );
+}
+
 // Asosiy menyu
 function mainMenu() {
   return Markup.keyboard([
@@ -56,7 +91,7 @@ function mainMenu() {
 }
 
 // /start
-bot.start((ctx) => {
+bot.start(async (ctx) => {
   const db = loadDB();
   ensureUser(db, ctx.from.id);
   saveDB(db);
@@ -67,17 +102,28 @@ bot.start((ctx) => {
       Markup.keyboard([Markup.button.contactRequest("📱 Telefon raqamimni ulashish")]).resize()
     );
   } else {
-    return ctx.reply("Asosiy menyu:", mainMenu());
+    const isMember = await checkMembership(ctx, REQUIRED_CHANNELS);
+    if (!isMember) {
+      return showJoinChannels(ctx);
+    } else {
+      return ctx.reply("Asosiy menyu:", mainMenu());
+    }
   }
 });
 
 // Telefon raqam
-bot.on("contact", (ctx) => {
+bot.on("contact", async (ctx) => {
   const db = loadDB();
   ensureUser(db, ctx.from.id);
   db.users[ctx.from.id].phone = ctx.message.contact.phone_number;
   saveDB(db);
-  ctx.reply("Rahmat! Siz ro‘yxatdan o‘tdingiz ✅", mainMenu());
+
+  const isMember = await checkMembership(ctx, REQUIRED_CHANNELS);
+  if (!isMember) {
+    return showJoinChannels(ctx);
+  } else {
+    return ctx.reply("Rahmat! Siz ro‘yxatdan o‘tdingiz ✅", mainMenu());
+  }
 });
 
 // Hisobim
@@ -370,6 +416,17 @@ bot.action(/^subcat_page:(.+):(.+):(\d+)$/, async (ctx) => {
 });
 
 bot.action("noop", (ctx) => ctx.answerCbQuery());
+
+// A'zolikni tekshirish
+bot.action("check_membership", async (ctx) => {
+  const isMember = await checkMembership(ctx, REQUIRED_CHANNELS);
+  if (isMember) {
+    ctx.editMessageText("Rahmat! Endi botdan foydalanishingiz mumkin.");
+    ctx.reply("Asosiy menyu:", mainMenu());
+  } else {
+    ctx.answerCbQuery("Siz hali barcha kanallarga azo bo'lmagansiz. Iltimos, azo bo'ling va qayta tekshiring.", { show_alert: true });
+  }
+});
 
 // Orqaga tugmalari
 bot.action("back_to_platforms", (ctx) => {
