@@ -514,6 +514,17 @@ bot.hears("👨‍💻 Admin bilan bog‘lanish", (ctx) => {
   ctx.reply("Admin: @yuldashev_frontend");
 });
 
+// Statistika
+bot.command('statistic', (ctx) => {
+  if (ctx.from.id !== ADMIN_ID) return ctx.reply("Bu buyruq faqat admin uchun.");
+
+  const db = loadDB();
+  const userCount = Object.keys(db.users).length;
+  const orderCount = Object.keys(db.orders || {}).length;
+
+  ctx.reply(`📊 Bot statistikasi:\n\n👥 Ro'yxatdan o'tgan foydalanuvchilar: ${userCount}\n📦 Jami buyurtmalar: ${orderCount}`);
+});
+
 // Pul kiritish jarayoni (summani va chekni qabul qilish)
 bot.on("message", async (ctx) => {
   const uid = ctx.from.id;
