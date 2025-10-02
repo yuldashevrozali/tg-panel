@@ -483,7 +483,7 @@ bot.action(/^service:(\d+)$/, async (ctx) => {
 
   ctx.answerCbQuery();
   ctx.reply(
-    `🛒 ${service.name}\n\n💵 Narx: ${(parseFloat(service.rate) * 1.15).toFixed(2)} UZS per unit\n📦 Min: ${service.min}, Max: ${service.max}\n\nLink va miqdorni kiriting.`,
+    `🛒 ${service.name}\n\n💵 Narx: ${(parseFloat(service.rate) * 1.15).toFixed(2)} UZS per 1000 units\n📦 Min: ${service.min}, Max: ${service.max}\n\nLink va miqdorni kiriting.`,
     {
       reply_markup: {
         inline_keyboard: [
@@ -586,7 +586,7 @@ bot.on("message", async (ctx) => {
       return ctx.reply(`❌ Miqdor ${s.service.min} va ${s.service.max} orasida bo‘lishi kerak.`);
     }
     s.qty = qty;
-    s.price = Math.ceil(qty * parseFloat(s.service.rate) * 1.15);
+    s.price = Math.ceil((qty / 1000) * parseFloat(s.service.rate) * 1.15);
     s.state = "await_link";
     return ctx.reply(`🔗 Endi link yuboring.\n\n💵 Narx: ${s.price} UZS (15% ustama bilan)`);
   }
