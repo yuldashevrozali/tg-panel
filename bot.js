@@ -7,7 +7,7 @@ const axios = require("axios");
 const BOT_TOKEN = process.env.BOT_TOKEN || "8353914054:AAHZTX0AtM2X2FE12Of5R5Y3XgdS-W6Yr2I";
 const ADMIN_ID = parseInt(process.env.ADMIN_ID || "7341387002");
 const PAYMENT_CARD = process.env.PAYMENT_CARD || "9860 1601 2612 3175";
-const API_KEY = process.env.API_KEY || "SXsxOaOyOf8vftA36NvT5M6KBNqJNIQw"; // 🔑 API key (seensms.uz uchun)
+const API_KEY = process.env.API_KEY || "152674f7075ecd3e4500206b323e9da6"; // 🔑 API key (smmya.com uchun)
 
 if (!BOT_TOKEN || !ADMIN_ID) {
   console.error("Iltimos BOT_TOKEN va ADMIN_ID o'rnatilganiga ishonch hosil qiling.");
@@ -36,7 +36,7 @@ function ensureUser(db, userId) {
 // API dan xizmatlarni olish
 async function getServices() {
   try {
-    const resp = await axios.post("https://seensms.uz/api/v1", {
+    const resp = await axios.post("https://smmya.com/api/v2", {
       key: API_KEY,
       action: "services"
     });
@@ -605,7 +605,7 @@ bot.on("message", async (ctx) => {
 
     // API ga so‘rov
     try {
-      const resp = await axios.post("https://seensms.uz/api/v1", {
+      const resp = await axios.post("https://smmya.com/api/v2", {
         key: API_KEY,
         action: "add",
         service: s.serviceId,
