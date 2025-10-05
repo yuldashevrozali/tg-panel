@@ -85,7 +85,7 @@ function showJoinChannels(ctx) {
 // Asosiy menyu
 function mainMenu() {
   return Markup.keyboard([
-    ["📊 Hisobim", "💳 Pul kiritish"],
+    ["📊 Hisobim1", "💳 Pul kiritish"],
     ["🛠 Xizmatlar", "👨‍💻 Admin bilan bog‘lanish"],
   ]).resize();
 }
@@ -626,5 +626,18 @@ bot.on("message", async (ctx) => {
   }
 });
 
-bot.launch();
+try {
+  bot.launch();
+} catch (error) {
+  if (error.response && error.response.error_code === 409) {
+    console.error("Bot allaqachon ishlayapti. Boshqa instance ni to'xtating yoki biroz kutib turing.");
+  } else {
+    console.error("Bot ishga tushirishda xatolik:", error);
+  }
+  process.exit(1);
+}
+
+// Graceful shutdown
+process.on('SIGINT', () => bot.stop('SIGINT'));
+process.on('SIGTERM', () => bot.stop('SIGTERM'));
 
